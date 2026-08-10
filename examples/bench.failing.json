@@ -1,0 +1,22 @@
+{
+  "bench": { "name": "rig-B-propulsion", "campaign_window_s": 600 },
+  "channels": [
+    { "name": "bus_power", "pin": "P1.3", "kind": "power",
+      "voltage_v": 28.0, "max_voltage_v": 32.0, "max_current_a": 10.0 },
+    { "name": "sense_line", "pin": "P1.3", "kind": "analog_in",
+      "sample_rate_hz": 700, "max_signal_freq_hz": 400 },
+    { "name": "valve_cmd", "pin": "P2.4", "kind": "analog_out",
+      "voltage_v": 12.0, "max_voltage_v": 12.0 }
+  ],
+  "interlocks": [
+    { "name": "estop_loop_1", "type": "hardware_estop", "cuts": ["bus_pwr"] }
+  ],
+  "sequences": [
+    { "name": "hot_fire_dress_rehearsal", "steps": [
+      { "action": "energize", "channel": "bus_power", "duration_s": 400 },
+      { "action": "stimulate", "channel": "valve_cmd",
+        "amplitude_v": 14.0, "duration_s": 250 },
+      { "action": "sample", "channel": "thrust_cell", "duration_s": 60 }
+    ] }
+  ]
+}

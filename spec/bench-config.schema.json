@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://standguard.dev/spec/bench-config.schema.json",
+  "title": "StandGuard Bench Configuration",
+  "description": "A hardware-in-the-loop test bench described as data: channels, pins, rails, interlocks, and sequences. Linted by the StandGuard check catalog.",
+  "type": "object",
+  "required": ["bench", "channels"],
+  "additionalProperties": false,
+  "properties": {
+    "bench": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "campaign_window_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Total time budget for the campaign. Checked by timing.budget."
+        }
+      }
+    },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every signal on the bench. Checked by schema.channels, unique.name, pin.conflict, limits.*, interlock.*, timing.*.",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "pin": {
+            "type": "string",
+            "description": "Physical pin or resource identifier, e.g. \"P1.3\", \"SPI0\". Must be unique across channels (pin.conflict)."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["power", "analog_out", "analog_in", "digital"],
+            "description": "power and analog_out are drive channels; analog_in and digital input-only channels are measurement lines."
+          },
+          "voltage_v": {
+            "type": "number",
+            "description": "Nominal drive voltage. Must not exceed max_voltage_v (limits.voltage)."
+          },
+          "max_voltage_v": { "type": "number", "exclusiveMinimum": 0 },
+          "max_current_a": { "type": "number", "exclusiveMinimum": 0 },
+          "interlock": {
+            "type": "string",
+            "description": "Name of the interlock loop that cuts this channel. Required for channels rated >= 24 V (interlock.missing); must resolve (interlock.undefined)."
+          },
+          "sample_rate_hz": { "type": "number", "exclusiveMinimum": 0 },
+          "max_signal_freq_hz": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Fastest signal component of interest. sample_rate_hz must be >= 2x this (timing.nyquist)."
+          }
+        }
+      }
+    },
+    "interlocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "cuts"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "type": {
+            "type": "string",
+            "enum": ["hardware_estop", "relay_loop", "software"],
+            "description": "hardware_estop is a physical e-stop loop; relay_loop a switched cut; software is advisory-only protection."
+          },
+          "cuts": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Channel names this loop de-energizes. Every entry must be a defined channel (interlock.cuts)."
+          }
+        }
+      }
+    },
+    "sequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "steps"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["action", "duration_s"],
+              "additionalProperties": false,
+              "properties": {
+                "action": {
+                  "type": "string",
+                  "enum": ["energize", "deenergize", "stimulate", "sample", "wait"]
+                },
+                "channel": {
+                  "type": "string",
+                  "description": "Target channel. Must be defined (sequence.reference). Not required for \"wait\"."
+                },
+                "amplitude_v": {
+                  "type": "number",
+                  "description": "Drive amplitude for stimulate steps. Must stay under the channel's max_voltage_v (stimulus.overdrive)."
+                },
+                "duration_s": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

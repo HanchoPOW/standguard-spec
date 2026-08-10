@@ -1,0 +1,22 @@
+{
+  "bench": { "name": "rig-A-avionics", "campaign_window_s": 3600 },
+  "channels": [
+    { "name": "bus_power", "pin": "P1.3", "kind": "power",
+      "voltage_v": 28.0, "max_voltage_v": 32.0, "max_current_a": 10.0,
+      "interlock": "estop_loop_1" },
+    { "name": "actuator_cmd", "pin": "P2.1", "kind": "analog_out",
+      "voltage_v": 10.0, "max_voltage_v": 12.0 },
+    { "name": "imu_spi", "pin": "SPI0", "kind": "digital",
+      "sample_rate_hz": 1000, "max_signal_freq_hz": 400 }
+  ],
+  "interlocks": [
+    { "name": "estop_loop_1", "type": "hardware_estop", "cuts": ["bus_power"] }
+  ],
+  "sequences": [
+    { "name": "bit_sequence", "steps": [
+      { "action": "energize", "channel": "bus_power", "duration_s": 5 },
+      { "action": "stimulate", "channel": "actuator_cmd",
+        "amplitude_v": 9.5, "duration_s": 30 }
+    ] }
+  ]
+}
