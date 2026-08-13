@@ -6,6 +6,10 @@ Every rule in this catalog comes from a failure mode that has actually burned a 
 
 The most expensive bench bugs are typed, not soldered. This spec exists so they get caught by a linter instead of a purchase order.
 
+![StandGuard linting a failing bench config — 7 errors, BENCH UNSAFE TO POWER](docs/demo.gif)
+
+**Try it right now:** the [StandGuard Playground](https://standguard.dev/play/) runs the real linter in your browser (WebAssembly, nothing uploaded) — a config that trips 7 rules is preloaded.
+
 ## What this repo is
 
 - **`spec/bench-config.schema.json`** — the open JSON Schema for describing a bench: channels, pins, rails, interlocks, sequences.
